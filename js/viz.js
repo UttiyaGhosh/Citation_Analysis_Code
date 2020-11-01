@@ -1,30 +1,27 @@
-var files = ["Random.csv", "Random1.csv"];
-var promises = [];
-
-files.forEach(function(url) {
-    promises.push(d3.csv(url))
-});
-
-Promise.all(promises).then(function(values) {
-    console.log(values)
-});
+const color={
+    paper:["#1b9e77", "#d95f02", "#7570b3"]
+}
 
 //Paper Select
-const paperSelect=document.getElementById('paper_select');
-d3.json('info.txt').then(function (data){
+const select_ids=["paper_select1","paper_select2","paper_select3"];
+d3.json('/Citation_Analysis_Code/data/info.txt').then(function (data){
 
-    const papers=data.papers;
-    const csvs=data.csvs;
-    for(let i=0;i<papers.length;i++){
-        let opt = document.createElement("option");
-        opt.value= csvs[i];
-        opt.innerHTML = papers[i];
-        opt.style.color="#3e3c5c"
-        paperSelect.appendChild(opt);
+    const papers = Object.keys(data);
+    const csvs = Object.values(data);
+    for (let i=0;i<select_ids.length;i++) {
+        const paperSelect = document.getElementById(select_ids[i]);
+        paperSelect.style.color=color.paper[i];
+        for (let j = 0; j < papers.length; j++) {
+            let opt = document.createElement("option");
+            opt.value = csvs[j];
+            opt.innerHTML = papers[j];
+            opt.style.color = color.paper[i];
+            paperSelect.appendChild(opt);
+        }
     }
 });
 
-paperSelect.onchange = function() {myFunc()}
+//paperSelect.onchange = function() {myFunc()}
 
 
 //Top Axis
@@ -35,7 +32,7 @@ const ta_width=+ta_svg.attr('width');
 const ta_height=+ta_svg.attr('height');
 
 //Top Axis margins
-const ta_margin = {top :20, bottom:20, left:50, right:10};
+const ta_margin = {top :10, bottom:10, left:50, right:10};
 const ta_inner_height=ta_height-ta_margin.top-ta_margin.bottom;
 const ta_inner_width=ta_width-ta_margin.right-ta_margin.left;
 
@@ -62,6 +59,129 @@ const ta_xscale=d3.scaleLinear()
 const ta_yscale=d3.scaleLinear()
     .domain([0, max_length-1])
     .range([0, ta_inner_height]);
+
+//Top axis Data
+const ta =ta_svg.append('g')
+    .attr('transform',`translate(${ta_margin.left},${ta_margin.top})`);
+
+//    Writing the name of categories vertically
+for(let i=0;i<n_cat;i++){
+    for(let j=0;j<cat[i].length;j++)
+        ta.append('text')
+            .attr('x', ta_xscale(i))
+            .attr('y', ta_yscale(j+max_length-cat[i].length))
+            .text(cat[i].charAt(j))
+            .style('font-size',15)
+            .style('fill','#3e3c5c');
+}
+
+const render = data => {
+
+    //Getting min and max year
+    let minYear=2021;
+    let maxYear=0;
+    for(let i=0;i<data.length;i++){
+        if(data[i]!="") {
+            data[i].forEach(d => {
+                d.Year = +d.Year;
+                d.Cat = +d.Cat;
+            });
+            const currMin = d3.min(data[i], d => d.Year);
+            const currMax = d3.max(data[i], d => d.Year);
+            if(currMin<minYear)
+                minYear=currMin
+            if(currMax>maxYear)
+                maxYear=currMax
+        }
+    }
+
+    //Right Axis
+    const ra_svg = d3.select('#right_axis');
+
+    //Right Axis dimensions
+    const ra_width = +ra_svg.attr('width');
+    const ra_height = +ra_svg.attr('height');
+
+    //Right Axis margin
+    const ra_margin = {top: 0, bottom: 25, left: 20, right: 20};
+    const ra_inner_height = ra_height - ra_margin.top - ra_margin.bottom;
+    const ra_inner_width = ra_width - ra_margin.right - ra_margin.left;
+
+    //Right Axis Scales
+    const ra_xScale = d3.scaleLinear()
+        .domain([minYear, maxYear])
+        .range([0, ra_inner_width]);
+
+    const ra_yScale = d3.scaleLinear()
+        .domain([0, 15])
+        .range([0, ra_inner_height]);
+
+    //Right Axis Data
+    const ra =ra_svg.append('g')
+        .attr('transform',`translate(${ra_margin.left},${ra_margin.top})`);
+
+    //Horizontal Grid
+    for (let i=0;i<n_cat_ttl;i++) {
+
+        ra.append('line')
+            .attr('x1', 0)
+            .attr('y1', ra_yScale(i))
+            .attr('x2', ra_inner_width)
+            .attr('y2', ra_yScale(i))
+            .style('stroke', 'black');
+
+    }
+
+    //Vertical Grid
+    for (let i=minYear;i<=maxYear;i++) {
+
+        ra.append('line')
+            .attr('x1', ra_xScale(i))
+            .attr('y1', 0)
+            .attr('x2', ra_xScale(i))
+            .attr('y2', ra_inner_height)
+            .style('stroke', 'black');
+
+    }
+
+    //X axis
+    ra.append('g').call(d3.axisBottom(ra_xScale)
+        .tickFormat(d3.format("d"))
+        .ticks(21))
+        .attr('transform',`translate(0,${ra_inner_height})`)
+        .style('stroke', 'black')
+        .style('stroke-width', '0.5px');
+}
+
+document.getElementById("paperSelectBtn").addEventListener("click", function(){
+
+    let papers=[]
+    for (let i=0;i<select_ids.length;i++) {
+        const paperSelect = document.getElementById(select_ids[i]);
+        papers.push(paperSelect.value);
+    }
+
+    let promises = [];
+    for (let i=0;i<papers.length;i++) {
+        if(papers[i]=="")
+            promises.push("")
+        else
+            promises.push(d3.csv("/Citation_Analysis_Code/data/" + papers[i]))
+    }
+
+    Promise.all(promises).then(function(data) {
+        render(data);
+            });
+    /*d3.csv(paperSelect.value).then(function (data) {
+        data.forEach(d => {
+            d.Year_X = +d.Year_X;
+            d.Cat_Y = +d.Cat_Y;
+            d.Offset_X = +d.Offset_X;
+            d.Offset_Y = +d.Offset_Y;
+        });
+        render(data);
+    });*/
+});
 
 //Left Axis
 /*const la_svg =d3.select('#left_axis');
@@ -95,23 +215,8 @@ const la_right_yscale=d3.scaleLinear()
 
 // Writing the axis contents
 
-//Top axis
-const ta =ta_svg.append('g')
-    .attr('transform',`translate(${ta_margin.left},${ta_margin.top})`);
-
-//    Writing the name of categories vertically
-for(let i=0;i<n_cat;i++){
-    for(let j=0;j<cat[i].length;j++)
-        ta.append('text')
-            .attr('x', ta_xscale(i))
-            .attr('y', ta_yscale(j+max_length-cat[i].length))
-            .text(cat[i].charAt(j))
-            .style('font-size',15)
-            .style('fill','#3e3c5c');
-}
-
 //Left Axis Left
-
+/*
 const la_left =lab_svg.append('g')
     .attr('transform',`translate(${la_left_margin.left},${la_left_margin.top})`);
 
@@ -153,20 +258,6 @@ for (let i=1;i<n_cat_ttl;i++) {
                 .style('fill','#3e3c5c');
     }
 }
-
-//Right Axis
-const ra_svg =d3.select('#right_axis');
-
-//Right Axis dimensions
-const ra_width=+ra_svg.attr('width');
-const ra_height=+ra_svg.attr('height');
-
-//Right Axis margin
-const ra_margin = {top :la_bottom_margin.top-200, bottom:la_bottom_margin.bottom, left:20, right:20};
-const ra_inner_height=ra_height-ra_margin.top-ra_margin.bottom;
-const ra_inner_width=ra_width-ra_margin.right-ra_margin.left;
-
-const ra_yscale=la_bottom_yscale;
 
 const ra =ra_svg.append('g')
     .attr('transform',`translate(${ra_margin.left},${ra_margin.top})`);
@@ -227,19 +318,4 @@ const render = data =>{
 
 
 };
-
-function myFunc() {
-
-    d3.csv(paperSelect.value).then(function (data) {
-        data.forEach(d => {
-            d.Year_X = +d.Year_X;
-            d.Cat_Y = +d.Cat_Y;
-            d.Offset_X = +d.Offset_X;
-            d.Offset_Y = +d.Offset_Y;
-        });
-        render(data);
-    });
-}
-
-
-
+*/

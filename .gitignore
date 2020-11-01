@@ -9,3 +9,5 @@
 /httpRequests/
 #Iml file
 *.iml
+#Python Checkpoints
+/python/.ipynb_checkpoints

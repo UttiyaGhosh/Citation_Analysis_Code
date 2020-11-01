@@ -1,0 +1,49 @@
+body {
+    margin: 0;
+    overflow: scroll;
+}
+
+.lines {
+    stroke: black;
+    stroke-width: 10;
+}
+
+.lines path {
+    stroke: #25656d;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+
+select{
+
+    width: 200px;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-bottom: 2px solid;
+    border-bottom-color: darkgray;
+    -webkit-appearance: none;
+    outline: none;
+    font-family: Serif;
+    font-size: large;
+}
+
+
+.custom-select{
+    position: relative;
+}
+
+.fa-chevron-down{
+    position: absolute;
+    padding-top: 4px;
+    top: 0;
+    left: 185px;
+    height: 100%;
+    width: 17px;
+    display: block;
+    pointer-events: none;
+}
+
+button {
+    background-color: #008CBA;
+}

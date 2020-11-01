@@ -4,7 +4,6 @@
     <head>
         <meta charset="UTF-8">
         <title>Citation Analysis</title>
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
         <link rel="stylesheet" href="styles.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <script src="https://d3js.org/d3.v6.min.js"></script>
@@ -13,33 +12,59 @@
     <body>
         <table border="1">
             <tbody>
-                <tr style="height: 100px;">
+                <tr style="height: 50px;">
                     <td rowspan="2">
-                        <svg width="200" height="200" id="top_axis"></svg>
+                        <svg width="200" height="150" id="top_axis"></svg>
                     </td>
-                    <td colspan="2">
+                    <td colspan="4">
                         <h1 style="text-align: center; font-family: 'Comic Sans MS'; font-weight: bolder; color: #1b9e77;">
                             Citation Context Analyzer
                         </h1>
                     </td>
                 </tr>
-                <tr style="height: 100px;">
-                    <td style="padding-left: 100px; width: 800px;" colspan="2">
+                <tr style="height: 50px;">
+                    <td style="padding-left: 100px; width: 400px;">
                         <div class="custom-select">
-                            <select id="paper_select" style="color: #1b9e77">
-                                <option value="" disabled selected>Select a paper</option>
+                            <select id="paper_select1">
+                                <option value="" disabled selected>Select the first paper</option>
                             </select>
                             <span class="fa fa-chevron-down"></span>
                         </div>
                     </td>
-
+                    <td style="padding-left: 100px; width: 400px;">
+                        <div class="custom-select">
+                            <select id="paper_select2">
+                                <option value="" disabled selected>Select the second paper</option>
+                            </select>
+                            <span class="fa fa-chevron-down"></span>
+                        </div>
+                    </td>
+                    <td style="padding-left: 100px; width: 400px;">
+                        <div class="custom-select">
+                            <select id="paper_select3">
+                                <option value="" disabled selected>Select the third paper</option>
+                            </select>
+                            <span class="fa fa-chevron-down"></span>
+                        </div>
+                    </td>
+                    <td style="padding-left: 100px; width: 400px;">
+                        <button id="paperSelectBtn" type="button"
+                                style="background-color: #008CBA; color: antiquewhite">
+                            Submit
+                        </button>
+                    </td>
                 </tr>
                 <tr>
                     <td>
-                        <svg width="200" height="450" id="left_axis"></svg>
+                        <svg width="200" height="870" id="left_axis"></svg>
                     </td>
-                    <td colspan="2">
-                        <svg width="1325" height="450" id="right_axis"></svg>
+                    <td colspan="4">
+                        <svg width="1325" height="870" id="right_axis"></svg>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        References
                     </td>
                 </tr>
             </tbody>
