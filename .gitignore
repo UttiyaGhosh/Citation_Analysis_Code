@@ -1,0 +1,11 @@
+# Default ignored files
+*/shelf/
+*/workspace.xml
+*/tasks.xml
+# Datasource local storage ignored files
+/../../../../../:\Sem 3\RE\Citation_Analysis_Code\.idea/dataSources/
+/dataSources.local.xml
+# Editor-based HTTP Client requests
+/httpRequests/
+#Iml file
+*.iml
