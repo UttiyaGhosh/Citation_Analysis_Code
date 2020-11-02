@@ -4,7 +4,9 @@ const color={
 
 //Paper Select
 const select_ids=["paper_select1","paper_select2","paper_select3"];
-d3.json('/Citation_Analysis_Code/data/info.txt').then(function (data){
+
+//Reading the paper Names
+d3.json('/Citation_Analysis_Code/data/paperNames.txt').then(function (data){
 
     const papers = Object.keys(data);
     const csvs = Object.values(data);
@@ -20,138 +22,6 @@ d3.json('/Citation_Analysis_Code/data/info.txt').then(function (data){
         }
     }
 });
-
-//paperSelect.onchange = function() {myFunc()}
-
-
-//Top Axis
-const ta_svg =d3.select('#top_axis');
-
-//Top Axis dimensions
-const ta_width=+ta_svg.attr('width');
-const ta_height=+ta_svg.attr('height');
-
-//Top Axis margins
-const ta_margin = {top :10, bottom:10, left:50, right:10};
-const ta_inner_height=ta_height-ta_margin.top-ta_margin.bottom;
-const ta_inner_width=ta_width-ta_margin.right-ta_margin.left;
-
-//Defining the categories
-const categories_str='CATEGORIES'
-const cat= ['Background', 'Idea', 'Basis', 'Comparison']
-
-//    Calculating the maximum length of the name of the categories
-const n_cat=cat.length;
-const n_cat_ttl=Math.pow(2,n_cat);
-let max_length=0;
-
-for(let i=0;i<n_cat;i++){
-    if(cat[i].length>max_length)
-        max_length=cat[i].length;
-}
-
-//Top axis Scale
-
-const ta_xscale=d3.scaleLinear()
-    .domain([0, n_cat])
-    .range([0, ta_inner_width]);
-
-const ta_yscale=d3.scaleLinear()
-    .domain([0, max_length-1])
-    .range([0, ta_inner_height]);
-
-//Top axis Data
-const ta =ta_svg.append('g')
-    .attr('transform',`translate(${ta_margin.left},${ta_margin.top})`);
-
-//    Writing the name of categories vertically
-for(let i=0;i<n_cat;i++){
-    for(let j=0;j<cat[i].length;j++)
-        ta.append('text')
-            .attr('x', ta_xscale(i))
-            .attr('y', ta_yscale(j+max_length-cat[i].length))
-            .text(cat[i].charAt(j))
-            .style('font-size',15)
-            .style('fill','#3e3c5c');
-}
-
-const render = data => {
-
-    //Getting min and max year
-    let minYear=2021;
-    let maxYear=0;
-    for(let i=0;i<data.length;i++){
-        if(data[i]!="") {
-            data[i].forEach(d => {
-                d.Year = +d.Year;
-                d.Cat = +d.Cat;
-            });
-            const currMin = d3.min(data[i], d => d.Year);
-            const currMax = d3.max(data[i], d => d.Year);
-            if(currMin<minYear)
-                minYear=currMin
-            if(currMax>maxYear)
-                maxYear=currMax
-        }
-    }
-
-    //Right Axis
-    const ra_svg = d3.select('#right_axis');
-
-    //Right Axis dimensions
-    const ra_width = +ra_svg.attr('width');
-    const ra_height = +ra_svg.attr('height');
-
-    //Right Axis margin
-    const ra_margin = {top: 0, bottom: 25, left: 20, right: 20};
-    const ra_inner_height = ra_height - ra_margin.top - ra_margin.bottom;
-    const ra_inner_width = ra_width - ra_margin.right - ra_margin.left;
-
-    //Right Axis Scales
-    const ra_xScale = d3.scaleLinear()
-        .domain([minYear, maxYear])
-        .range([0, ra_inner_width]);
-
-    const ra_yScale = d3.scaleLinear()
-        .domain([0, 15])
-        .range([0, ra_inner_height]);
-
-    //Right Axis Data
-    const ra =ra_svg.append('g')
-        .attr('transform',`translate(${ra_margin.left},${ra_margin.top})`);
-
-    //Horizontal Grid
-    for (let i=0;i<n_cat_ttl;i++) {
-
-        ra.append('line')
-            .attr('x1', 0)
-            .attr('y1', ra_yScale(i))
-            .attr('x2', ra_inner_width)
-            .attr('y2', ra_yScale(i))
-            .style('stroke', 'black');
-
-    }
-
-    //Vertical Grid
-    for (let i=minYear;i<=maxYear;i++) {
-
-        ra.append('line')
-            .attr('x1', ra_xScale(i))
-            .attr('y1', 0)
-            .attr('x2', ra_xScale(i))
-            .attr('y2', ra_inner_height)
-            .style('stroke', 'black');
-
-    }
-
-    //X axis
-    ra.append('g').call(d3.axisBottom(ra_xScale)
-        .tickFormat(d3.format("d"))
-        .ticks(21))
-        .attr('transform',`translate(0,${ra_inner_height})`)
-        .style('stroke', 'black')
-        .style('stroke-width', '0.5px');
-}
 
 document.getElementById("paperSelectBtn").addEventListener("click", function(){
 
@@ -170,18 +40,161 @@ document.getElementById("paperSelectBtn").addEventListener("click", function(){
     }
 
     Promise.all(promises).then(function(data) {
-        render(data);
+        let dataMerged=[];
+        for(let i=0;i<data.length;i++) {
+            if (data[i] != "") {
+                data[i].forEach(d => {
+                    d.Year = +d.Year;
+                    d.Cat = +d.Cat;
+                    d.Count = +d.Count;
+                    d.paperId = i;
+                });
+                dataMerged=dataMerged.concat(data[i]);
+            }
+
+        }
+        render(dataMerged);
             });
-    /*d3.csv(paperSelect.value).then(function (data) {
-        data.forEach(d => {
-            d.Year_X = +d.Year_X;
-            d.Cat_Y = +d.Cat_Y;
-            d.Offset_X = +d.Offset_X;
-            d.Offset_Y = +d.Offset_Y;
-        });
-        render(data);
-    });*/
+
 });
+
+const render = data => {
+
+    d3.selectAll('g').remove();
+
+    //Top Axis
+    const ta_svg =d3.select('#top_axis');
+
+    //Top Axis dimensions
+    const ta_width=+ta_svg.attr('width');
+    const ta_height=+ta_svg.attr('height');
+
+    //Top Axis margins
+    const ta_margin = {top :10, bottom:10, left:50, right:10};
+    const ta_inner_height=ta_height-ta_margin.top-ta_margin.bottom;
+    const ta_inner_width=ta_width-ta_margin.right-ta_margin.left;
+
+    //Defining the categories
+    const categories_str='CATEGORIES'
+    let cat=[]
+    if(data.length!=0)
+        cat= ['Background', 'Idea', 'Basis', 'Comparison']
+
+    //Calculating the maximum length of the name of the categories
+    const n_cat=cat.length;
+    let n_cat_ttl=0;
+    if(n_cat!=0)
+        n_cat_ttl=Math.pow(2,n_cat);
+    let max_length=0;
+
+    for(let i=0;i<n_cat;i++){
+        if(cat[i].length>max_length)
+            max_length=cat[i].length;
+    }
+
+    //Top axis Scale
+
+    const ta_xscale=d3.scaleLinear()
+        .domain([0, n_cat])
+        .range([0, ta_inner_width]);
+
+    const ta_yscale=d3.scaleLinear()
+        .domain([0, max_length-1])
+        .range([0, ta_inner_height]);
+
+    //Top axis Data
+    const ta =ta_svg.append('g')
+        .attr('transform',`translate(${ta_margin.left},${ta_margin.top})`);
+
+    //Writing the name of categories vertically
+    for(let i=0;i<n_cat;i++){
+        for(let j=0;j<cat[i].length;j++)
+            ta.append('text')
+                .attr('x', ta_xscale(i))
+                .attr('y', ta_yscale(j+max_length-cat[i].length))
+                .text(cat[i].charAt(j))
+                .style('font-size',15)
+                .style('fill','#3e3c5c');
+    }
+
+    //Right Axis
+    const ra_svg = d3.select('#right_axis');
+
+    //Right Axis dimensions
+    const ra_width = +ra_svg.attr('width');
+    const ra_height = +ra_svg.attr('height');
+
+    //Right Axis margin
+    const ra_margin = {top: 0, bottom: 25, left: 20, right: 20};
+    const ra_inner_height = ra_height - ra_margin.top - ra_margin.bottom;
+    const ra_inner_width = ra_width - ra_margin.right - ra_margin.left;
+
+    //Right Axis Scales
+    const minYear=d3.min(data,d=>d.Year);
+    const maxYear=d3.max(data,d=>d.Year);
+
+    const ra_xScale = d3.scaleLinear()
+        .domain([minYear, maxYear+1])
+        .range([0, ra_inner_width]);
+
+    const ra_yScale = d3.scaleLinear()
+        .domain([1, 16])
+        .range([0, ra_inner_height]);
+
+    const box_height=(ra_yScale(1)-ra_yScale(0))/5;
+    const grid_width=ra_xScale(minYear+1)-ra_xScale(minYear);
+
+    const ra_dataScale = d3.scaleLinear()
+        .domain([d3.min(data,d=>d.Count), d3.max(data,d=>d.Count)])
+        .range([box_height, grid_width-box_height]);
+
+    //Right Axis Data
+    const ra =ra_svg.append('g')
+        .attr('transform',`translate(${ra_margin.left},${ra_margin.top})`);
+
+    //Horizontal Grid
+    for (let i=1;i<=n_cat_ttl;i++) {
+
+        ra.append('line')
+            .attr('x1', 0)
+            .attr('y1', ra_yScale(i))
+            .attr('x2', ra_inner_width)
+            .attr('y2', ra_yScale(i))
+            .style('stroke', 'black');
+    }
+
+    //Vertical Grid
+    for (let i=minYear;i<=maxYear+1;i++) {
+
+        ra.append('line')
+            .attr('x1', ra_xScale(i))
+            .attr('y1', 0)
+            .attr('x2', ra_xScale(i))
+            .attr('y2', ra_inner_height)
+            .style('stroke', 'black');
+
+    }
+
+    //X axis
+    ra.append('g').call(d3.axisBottom(ra_xScale)
+        .tickFormat(d3.format("d"))
+        .ticks(21))
+        .attr('transform',`translate(0,${ra_inner_height})`)
+        .style('stroke', 'black')
+        .style('stroke-width', '0.5px');
+
+
+    //Bar Chart
+    const box=ra.selectAll('rect').data(data)
+        .enter().append('g');
+    box.append('rect')
+        .attr('x', d=>ra_xScale(d.Year))
+        .attr('y', d=>ra_yScale(d.Cat)+((d.paperId+1)*box_height))
+        .attr('width',d=>ra_dataScale(d.Count))
+        .attr('height',box_height)
+        .style('fill',d=>color.paper[d.paperId]);
+
+}
 
 //Left Axis
 /*const la_svg =d3.select('#left_axis');
