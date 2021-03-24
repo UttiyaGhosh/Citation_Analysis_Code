@@ -14,9 +14,9 @@ body {
     stroke-linecap: round;
 }
 
-select{
+select {
 
-    width: 200px;
+    width: 180px;
     border-top: none;
     border-left: none;
     border-right: none;
@@ -29,15 +29,15 @@ select{
 }
 
 
-.custom-select{
+.custom-select {
     position: relative;
 }
 
-.fa-chevron-down{
+.fa-chevron-down {
     position: absolute;
     padding-top: 4px;
     top: 0;
-    left: 185px;
+    left: 200px;
     height: 100%;
     width: 17px;
     display: block;
@@ -46,4 +46,23 @@ select{
 
 button {
     background-color: #008CBA;
+}
+
+.dyn_tab tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.dyn_tab thead {
+    text-align: center;
+    font-weight: bold;
+}
+
+.dyn_tab caption {
+    font-size: 20px;
+    font-weight: bold;
+    padding: 15px 0px
+}
+
+input {
+    color: black;
 }
